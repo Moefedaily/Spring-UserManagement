@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - User Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><i class="fas fa-user-edit"></i> Edit User</h1>
+    </header>
+
+    <a th:href="@{/users}" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Back to User List
+    </a>
+
+    <div th:if="${#fields.hasErrors('userDto')}" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div th:each="error : ${#fields.errors('userDto')}" th:text="${error}"></div>
+    </div>
+
+    <div th:if="${#fields.hasErrors('userDto.email')}" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:errors="*{userDto.email}"></span>
+    </div>
+
+    <div class="form-container">
+        <div class="form-info">
+            <p><i class="fas fa-info-circle"></i> Update the user information below. Fields marked with * are required.</p>
+        </div>
+
+        <form th:action="@{/users/edit/{id}(id=${userDto.id})}" th:object="${userDto}" method="post" id="editUserForm">
+            <input type="hidden" th:field="*{id}">
+
+            <div class="form-group">
+                <label for="name" class="required-field">
+                    <i class="fas fa-user"></i>Full Name
+                </label>
+                <input type="text"
+                       id="name"
+                       th:field="*{name}"
+                       placeholder="Enter user's full name"
+                       required
+                       maxlength="100"
+                       th:class="${#fields.hasErrors('name')} ? 'error' : ''">
+                <div th:if="${#fields.hasErrors('name')}" class="field-error" th:errors="*{name}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="required-field">
+                    <i class="fas fa-envelope"></i>Email Address
+                </label>
+                <input type="email"
+                       id="email"
+                       th:field="*{email}"
+                       placeholder="user@example.com"
+                       required
+                       maxlength="150"
+                       th:class="${#fields.hasErrors('email')} ? 'error' : ''">
+                <div th:if="${#fields.hasErrors('email')}" class="field-error" th:errors="*{email}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">
+                    <i class="fas fa-phone"></i>Phone Number
+                </label>
+                <input type="tel"
+                       id="phone"
+                       th:field="*{phone}"
+                       placeholder="+1234567890 (optional)"
+                       maxlength="20"
+                       th:class="${#fields.hasErrors('phone')} ? 'error' : ''">
+                <div th:if="${#fields.hasErrors('phone')}" class="field-error" th:errors="*{phone}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="dateNaissance">
+                    <i class="fas fa-calendar-alt"></i>Date of Birth
+                </label>
+                <input type="date"
+                       id="dateNaissance"
+                       th:field="*{dateNaissance}"
+                       th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                       th:class="${#fields.hasErrors('dateNaissance')} ? 'error' : ''">
+                <div th:if="${#fields.hasErrors('dateNaissance')}" class="field-error" th:errors="*{dateNaissance}"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large">
+                    <i class="fas fa-save"></i>
+                    Update User
+                </button>
+                <a th:href="@{/users}" class="btn btn-secondary btn-large">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <p>
+            <i class="fas fa-shield-alt"></i>
+            All user data is securely stored and protected
+        </p>
+    </footer>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editUserForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function(e) {
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            submitBtn.disabled = true;
+        });
+
+        // Real-time validation feedback
+        const inputs = form.querySelectorAll('input[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    this.style.borderColor = 'var(--error-red)';
+                } else {
+                    this.style.borderColor = 'var(--success-green)';
+                }
+            });
+
+            input.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.style.borderColor = 'var(--success-green)';
+                }
+            });
+        });
+
+        const emailInput = document.getElementById('email');
+        emailInput.addEventListener('blur', function() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (this.value && !emailPattern.test(this.value)) {
+                this.style.borderColor = 'var(--error-red)';
+            } else if (this.value) {
+                this.style.borderColor = 'var(--success-green)';
+            }
+        });
+
+        const phoneInput = document.getElementById('phone');
+        phoneInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^\d+\-\s()]/g, '');
+        });
+
+        document.getElementById('name').focus();
+    });
+</script>
+</body>
+</html>
