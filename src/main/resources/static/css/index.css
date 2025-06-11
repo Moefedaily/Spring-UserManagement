@@ -238,15 +238,110 @@
     text-align: center;
 }
 
-/* Ripple Animation */
-@keyframes ripple {
-    to {
-        transform: scale(2);
-        opacity: 0;
-    }
+.management-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    max-width: 900px;
+    margin: 40px auto;
 }
 
-/* Responsive Design for Index */
+.management-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-gray);
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.management-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.management-section:hover::before {
+    left: 100%;
+}
+
+.management-section:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(38, 0, 76, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.section-icon {
+    margin-bottom: 25px;
+}
+
+.section-icon i {
+    font-size: 4rem;
+    background: linear-gradient(135deg, var(--primary-purple), var(--light-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.management-section h3 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.management-section p {
+    color: var(--text-gray);
+    margin-bottom: 30px;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.section-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.api-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-gray);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    margin-top: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.api-section h4 {
+    color: #9b7abb;
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+}
+
+.api-section p {
+    color: var(--text-gray);
+    margin-bottom: 20px;
+}
+
+
 @media (max-width: 768px) {
     .hero-title {
         font-size: 2.5rem;
@@ -274,4 +369,34 @@
     .quick-stats {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
+    .management-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        margin: 30px 20px;
+    }
+
+    .management-section {
+        padding: 30px 20px;
+    }
+
+    .quick-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .quick-actions .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .api-section {
+        margin: 30px 20px;
+        padding: 25px;
+    }
 }
+    @keyframes ripple {
+        to {
+            transform: scale(2);
+            opacity: 0;
+        }
+    }
