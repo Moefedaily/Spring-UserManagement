@@ -74,30 +74,16 @@ The application showcases two different approaches:
 ### Traditional Web (Users)
 - Server-side rendering with Thymeleaf
 - Form submissions and redirects
-- Perfect for user-facing interfaces
 
 ### Hybrid (Products)
 - Web interface for user interaction
 - REST API for integration and testing
-- Best of both worlds
-
-The visual design maintains consistency across both systems with a modern dark theme, smooth animations, and responsive layout.
 
 ## Technical Challenges Solved
 
 ### Database Relationship Management
 - Implemented product bundle relationships
 - Prevented circular dependencies in bundle creation
-
-### Architecture Evolution
-- Migrated from servlet-based to Spring Boot
-- Maintained same visual design across different architectures
-- Implemented both traditional and modern approaches
-
-### Testing Strategy
-- Created comprehensive MockMvc tests
-- Mocked service layer for isolated controller testing
-- Covered all CRUD operations and business logic
 
 ## What's Under the Hood
 
