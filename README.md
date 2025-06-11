@@ -40,7 +40,7 @@ The assignment demonstrates the evolution from traditional Java web development 
 
 **Frontend:**
 - Thymeleaf template engine
-- Custom CSS with dark theme
+- Custom CSS
 - Responsive web design
 - Form validation and user feedback
 
