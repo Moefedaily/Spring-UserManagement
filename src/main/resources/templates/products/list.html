@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><i class="fas fa-boxes"></i> Product Management System</h1>
+    </header>
+
+    <!-- Success Message -->
+    <div th:if="${successMessage}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <div class="stats-section">
+        <div class="stats-card">
+            <i class="fas fa-boxes"></i>
+            <div>
+                <h3 th:text="${productCount}">0</h3>
+                <p>Total Products</p>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <i class="fas fa-layer-group"></i>
+            <div>
+                <h3 th:text="${bundleCount}">0</h3>
+                <p>Product Bundles</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a th:href="@{/products/add}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Product
+            </a>
+            <a th:href="@{/products/bundle}" class="btn btn-secondary">
+                <i class="fas fa-layer-group"></i> Create Bundle
+            </a>
+            <button onclick="location.reload()" class="btn btn-secondary">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="stats-section" style="margin-bottom: 20px;">
+        <div class="actions">
+            <a th:href="@{/products}"
+               th:class="${viewType == null} ? 'btn btn-primary' : 'btn btn-secondary'">
+                <i class="fas fa-list"></i> All Products
+            </a>
+            <a th:href="@{/products/simple}"
+               th:class="${viewType == 'simple'} ? 'btn btn-primary' : 'btn btn-secondary'">
+                <i class="fas fa-box"></i> Simple Products
+            </a>
+            <a th:href="@{/products/bundles}"
+               th:class="${viewType == 'bundles'} ? 'btn btn-primary' : 'btn btn-secondary'">
+                <i class="fas fa-layer-group"></i> Bundles Only
+            </a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(products)}" class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No Products Found</h3>
+            <p>Start building your product catalog by adding the first product!</p>
+            <a th:href="@{/products/add}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create First Product
+            </a>
+        </div>
+
+        <!-- Products Table -->
+        <table th:if="${!#lists.isEmpty(products)}" class="users-table">
+            <thead>
+            <tr>
+                <th><i class="fas fa-hashtag"></i> ID</th>
+                <th><i class="fas fa-box"></i> Product</th>
+                <th><i class="fas fa-dollar-sign"></i> Price</th>
+                <th><i class="fas fa-layer-group"></i> Type</th>
+                <th><i class="fas fa-list"></i> Sources</th>
+                <th><i class="fas fa-cogs"></i> Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="product, iterStat : ${products}" th:class="${iterStat.even} ? 'even' : 'odd'">
+                <td class="id-cell" th:text="'#' + ${product.id}">#1</td>
+                <td class="name-cell">
+                    <div class="user-avatar" th:text="${#strings.substring(product.name, 0, 1)}">P</div>
+                    <div>
+                        <strong th:text="${product.name}">Product Name</strong>
+                    </div>
+                </td>
+                <td class="price-cell">
+                            <span style="color: var(--success-green); font-weight: 600;">
+                                $<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span>
+                            </span>
+                </td>
+                <td class="type-cell">
+                            <span th:if="${product.bundle}" style="color: var(--primary-purple);">
+                                <i class="fas fa-layer-group"></i> Bundle
+                            </span>
+                    <span th:if="${!product.bundle}" style="color: var(--text-gray);">
+                                <i class="fas fa-box"></i> Simple
+                            </span>
+                </td>
+                <td class="sources-cell">
+                            <span th:if="${product.bundle}" style="color: var(--text-light);">
+                                <span th:text="${product.sourcesCount}">0</span> items
+                            </span>
+                    <span th:if="${!product.bundle}" style="color: var(--text-gray);">-</span>
+                </td>
+                <td class="actions-cell">
+                    <div class="action-buttons">
+                        <a th:href="@{/products/duplicate/{id}(id=${product.id})}"
+                           class="btn btn-edit"
+                           th:title="'Duplicate ' + ${product.name}">
+                            <i class="fas fa-copy"></i>
+                        </a>
+                        <a th:href="@{/products/edit/{id}(id=${product.id})}"
+                           class="btn btn-edit"
+                           th:title="'Edit ' + ${product.name}">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button th:data-product-id="${product.id}"
+                                th:data-product-name="${product.name}"
+                                class="btn btn-delete"
+                                th:title="'Delete ' + ${product.name}"
+                                onclick="confirmDelete(this.dataset.productId, this.dataset.productName)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer class="footer">
+        <p>
+            <i class="fas fa-heart" style="color:rgb(92, 8, 8);"></i>
+            Built with Spring Boot, Thymeleaf & PostgreSQL &copy; 2025
+        </p>
+    </footer>
+</div>
+
+<script>
+    function confirmDelete(productId, productName) {
+        console.log("Confirm delete for product ID: " + productId + ", Name: " + productName);
+        const result = confirm(
+            `⚠️ DELETE PRODUCT CONFIRMATION\n\n` +
+            `Product: ` + productName +
+            `\n` +
+            `ID: ` + productId +
+            `\n\n` +
+            `This action cannot be undone!\n` +
+            `Are you absolutely sure?`
+        );
+
+        if (result) {
+            const deleteBtn = event.target.closest('.btn-delete');
+            deleteBtn.classList.add('loading');
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            window.location.href = '/UserManagement/products/delete/' + productId;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.transform = 'translateX(100%)';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        });
+
+        const tableRows = document.querySelectorAll('.users-table tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+            });
+
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    });
+
+    document.querySelectorAll('.btn:not(.btn-delete)').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.add('loading');
+            setTimeout(() => this.classList.remove('loading'), 2000);
+        });
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.altKey && e.key === 'n') {
+            e.preventDefault();
+            window.location.href = '/UserManagement/products/add';
+        }
+
+        if (e.altKey && e.key === 'r') {
+            e.preventDefault();
+            location.reload();
+        }
+    });
+</script>
+</body>
+</html>

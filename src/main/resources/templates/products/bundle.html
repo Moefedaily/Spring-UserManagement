@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Product Bundle - Product Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><i class="fas fa-layer-group"></i> Create Product Bundle</h1>
+    </header>
+
+    <a th:href="@{/products}" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Back to Product List
+    </a>
+
+    <!-- Success Message -->
+    <div th:if="${successMessage}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <div class="form-container">
+        <div class="form-info">
+            <p><i class="fas fa-info-circle"></i> Create a bundle by combining multiple products. Select at least 2 products to create a bundle. The price will be calculated automatically.</p>
+        </div>
+
+        <!-- Check if there are products available -->
+        <div th:if="${#lists.isEmpty(simpleProducts)}" class="alert alert-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>No products available for bundling!</strong>
+            <br>You need at least 2 simple products to create a bundle.
+            <br><a th:href="@{/products/add}" class="btn btn-primary" style="margin-top: 10px;">
+            <i class="fas fa-plus"></i> Add Products First
+        </a>
+        </div>
+
+        <form th:if="${!#lists.isEmpty(simpleProducts)}" th:action="@{/products/bundle}" method="post" id="bundleForm">
+            <div class="form-group">
+                <label for="bundleName" class="required-field">
+                    <i class="fas fa-layer-group"></i>Bundle Name
+                </label>
+                <input type="text"
+                       id="bundleName"
+                       name="bundleName"
+                       placeholder="Enter bundle name (e.g., 'Gaming Setup', 'Office Package')"
+                       required
+                       maxlength="100">
+                <small style="color: var(--text-gray); font-size: 0.9em;">
+                    <i class="fas fa-lightbulb"></i>
+                    If left empty, the bundle name will be auto-generated from selected products.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="required-field">
+                    <i class="fas fa-boxes"></i>Select Products for Bundle
+                </label>
+                <div class="bundle-sources">
+                    <div th:each="product : ${simpleProducts}" class="source-item">
+                        <input type="checkbox"
+                               th:id="'product_' + ${product.id}"
+                               name="sourceIds"
+                               th:value="${product.id}"
+                               onchange="updateBundlePreview()">
+                        <label th:for="'product_' + ${product.id}" style="display: flex; align-items: center; width: 100%; cursor: pointer; padding: 8px; border-radius: 6px; margin: 0;">
+                            <div class="user-avatar" style="margin-right: 12px;" th:text="${#strings.substring(product.name, 0, 1)}">P</div>
+                            <div style="flex: 1;">
+                                <strong th:text="${product.name}" style="color: var(--text-light);">Product Name</strong>
+                                <br>
+                                <span style="color: var(--success-green); font-weight: 600;">
+                                        $<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span>
+                                    </span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <small style="color: var(--text-gray); font-size: 0.9em; margin-top: 8px; display: block;">
+                    <i class="fas fa-info-circle"></i>
+                    Select at least 2 products to create a bundle. Only simple products (non-bundles) can be used as sources.
+                </small>
+            </div>
+
+            <!-- Bundle Preview -->
+            <div id="bundlePreview" class="form-group" style="display: none;">
+                <label>
+                    <i class="fas fa-preview"></i>Bundle Preview
+                </label>
+                <div style="background: var(--hover-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-gray);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="color: var(--text-light); font-weight: 600;">
+                                <i class="fas fa-layer-group"></i> Selected Products:
+                            </span>
+                        <span id="selectedCount" style="color: var(--primary-purple); font-weight: 600;">0</span>
+                    </div>
+                    <div id="selectedProducts" style="margin-bottom: 10px;">
+                        <!-- Selected products will be shown here -->
+                    </div>
+                    <div style="border-top: 1px solid var(--border-gray); padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-light); font-weight: 600;">Total Bundle Price:</span>
+                            <span id="totalPrice" style="color: var(--success-green); font-weight: 700; font-size: 1.2em;">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large" id="createBundleBtn" disabled>
+                    <i class="fas fa-layer-group"></i>
+                    Create Bundle
+                </button>
+                <a th:href="@{/products}" class="btn btn-secondary btn-large">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <p>
+            <i class="fas fa-shield-alt"></i>
+            Bundle pricing is calculated automatically from selected products
+        </p>
+    </footer>
+</div>
+
+<style>
+    .bundle-sources {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid var(--border-gray);
+        border-radius: 8px;
+        padding: 15px;
+        background: var(--dark-bg);
+    }
+
+    .source-item {
+        margin-bottom: 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .source-item:hover {
+        background: var(--hover-bg);
+    }
+
+    .source-item input[type="checkbox"] {
+        width: auto;
+        margin-right: 12px;
+        transform: scale(1.2);
+    }
+
+    .source-item input[type="checkbox"]:checked + label {
+        background: var(--primary-purple);
+        color: white;
+        border-radius: 6px;
+    }
+
+    .selected-product-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        background: var(--primary-purple);
+        border-radius: 6px;
+        margin-bottom: 8px;
+        color: white;
+    }
+
+    .selected-product-item .user-avatar {
+        background: rgba(255, 255, 255, 0.2);
+    }
+</style>
+
+<script th:if="${!#lists.isEmpty(simpleProducts)}">
+    const products =  [];
+
+    function updateBundlePreview() {
+        const checkboxes = document.querySelectorAll('input[name="sourceIds"]:checked');
+        const selectedCount = checkboxes.length;
+        const createBtn = document.getElementById('createBundleBtn');
+        const preview = document.getElementById('bundlePreview');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const selectedProductsEl = document.getElementById('selectedProducts');
+        const totalPriceEl = document.getElementById('totalPrice');
+
+        selectedCountEl.textContent = selectedCount;
+
+        if (selectedCount >= 2) {
+            preview.style.display = 'block';
+            createBtn.disabled = false;
+            createBtn.classList.remove('btn-secondary');
+            createBtn.classList.add('btn-primary');
+
+            let totalPrice = 0;
+            let selectedProductsHtml = '';
+
+            checkboxes.forEach(checkbox => {
+                const productId = parseInt(checkbox.value);
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    totalPrice += product.price;
+                    selectedProductsHtml += `
+                            <div class="selected-product-item">
+                                <div class="user-avatar" style="margin-right: 12px;">${product.name.charAt(0)}</div>
+                                <div style="flex: 1;">
+                                    <strong>${product.name}</strong>
+                                    <span style="float: right;">$${product.price.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        `;
+                }
+            });
+
+            selectedProductsEl.innerHTML = selectedProductsHtml;
+            totalPriceEl.textContent = '$' + totalPrice.toFixed(2);
+        } else {
+            preview.style.display = 'none';
+            createBtn.disabled = true;
+            createBtn.classList.remove('btn-primary');
+            createBtn.classList.add('btn-secondary');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('bundleForm');
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const selectedCount = document.querySelectorAll('input[name="sourceIds"]:checked').length;
+
+                if (selectedCount < 2) {
+                    e.preventDefault();
+                    alert('Please select at least 2 products to create a bundle.');
+                    return;
+                }
+
+                const submitBtn = document.getElementById('createBundleBtn');
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Bundle...';
+                submitBtn.disabled = true;
+            });
+
+            document.getElementById('bundleName').focus();
+        }
+    });
+</script>
+</body>
+</html>

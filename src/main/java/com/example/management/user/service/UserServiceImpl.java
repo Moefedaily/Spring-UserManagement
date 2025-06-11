@@ -1,5 +1,4 @@
 package com.example.management.user.service;
-
 import com.example.management.user.model.User;
 import com.example.management.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

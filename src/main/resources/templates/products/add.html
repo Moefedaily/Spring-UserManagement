@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Product - Product Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><i class="fas fa-plus"></i> Add New Product</h1>
+    </header>
+
+    <a th:href="@{/products}" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Back to Product List
+    </a>
+
+    <div th:if="${#fields.hasErrors('productDto')}" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div th:each="error : ${#fields.errors('productDto')}" th:text="${error}"></div>
+    </div>
+
+    <div th:if="${#fields.hasErrors('productDto.name')}" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:errors="*{productDto.name}"></span>
+    </div>
+
+    <div class="form-container">
+        <div class="form-info">
+            <p><i class="fas fa-info-circle"></i> Fill in the details below to create a new product. Fields marked with * are required.</p>
+        </div>
+
+        <form th:action="@{/products/add}" th:object="${productDto}" method="post" id="addProductForm">
+            <div class="form-group">
+                <label for="name" class="required-field">
+                    <i class="fas fa-box"></i>Product Name
+                </label>
+                <input type="text"
+                       id="name"
+                       th:field="*{name}"
+                       placeholder="Enter product name"
+                       required
+                       maxlength="100"
+                       th:class="${#fields.hasErrors('name')} ? 'error' : ''">
+                <div th:if="${#fields.hasErrors('name')}" class="field-error" th:errors="*{name}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="price" class="required-field">
+                    <i class="fas fa-dollar-sign"></i>Product Price
+                </label>
+                <input type="number"
+                       id="price"
+                       th:field="*{price}"
+                       placeholder="0.00"
+                       required
+                       min="0.01"
+                       max="999999.99"
+                       step="0.01"
+                       th:class="${#fields.hasErrors('price')} ? 'error' : ''">
+                <div th:if="${#fields.hasErrors('price')}" class="field-error" th:errors="*{price}"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large">
+                    <i class="fas fa-plus"></i>
+                    Create Product
+                </button>
+                <a th:href="@{/products}" class="btn btn-secondary btn-large">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <p>
+            <i class="fas fa-shield-alt"></i>
+            All product data is securely stored and protected
+        </p>
+    </footer>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('addProductForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function(e) {
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            submitBtn.disabled = true;
+        });
+
+        // Real-time validation feedback
+        const inputs = form.querySelectorAll('input[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    this.style.borderColor = 'var(--error-red)';
+                } else {
+                    this.style.borderColor = 'var(--success-green)';
+                }
+            });
+
+            input.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.style.borderColor = 'var(--success-green)';
+                }
+            });
+        });
+
+        const priceInput = document.getElementById('price');
+        priceInput.addEventListener('blur', function() {
+            const price = parseFloat(this.value);
+            if (this.value && (isNaN(price) || price <= 0)) {
+                this.style.borderColor = 'var(--error-red)';
+            } else if (this.value) {
+                this.style.borderColor = 'var(--success-green)';
+            }
+        });
+
+        document.getElementById('name').focus();
+    });
+</script>
+</body>
+</html>
